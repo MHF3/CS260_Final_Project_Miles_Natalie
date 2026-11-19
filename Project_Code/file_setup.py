@@ -1,5 +1,14 @@
 import csv
-import OrderedDict
+from collections import OrderedDict
+
+import kagglehub
+from kagglehub import KaggleDatasetAdapter
+
+from sklearn.model_selection import train_test_split
+
+###########################################################################################################
+# CLASSES
+###########################################################################################################
 
 class Example:
 
@@ -22,6 +31,41 @@ class Partition:
 
         # number of classes
         self.K = K
+   
+###########################################################################################################
+# DATA LOADING / READING
+###########################################################################################################
+        
+def load_kaggle_data() :
+    """
+    got this code from kaggle on the dataset we choose
+    reads it in and uses sklearn to split it into train (.8) and test (.2)
+    """
+    
+    # Set the path to the file you'd like to load
+    file_path = "water_potability.csv"
+
+    # Load the latest version
+    df = kagglehub.load_dataset(
+    KaggleDatasetAdapter.PANDAS,
+    "devanshibavaria/water-potability-dataset-with-10-parameteres",
+    file_path,
+    # Provide any additional arguments like
+    # sql_query or pandas_kwargs. See the
+    # documenation for more information:
+    # https://github.com/Kaggle/kagglehub/blob/main/README.md#kaggledatasetadapterpandas
+    )
+
+    train_df, test_df = train_test_split(df, test_size=0.2, random_state=42) # random_state = 42 makes it the same split every time
+    
+    # save as csv so we can partition etc.
+    df.to_csv("data/water_potability.csv", index=False)
+    train_df.to_csv("data/water_potability_train.csv", index=False)
+    test_df.to_csv("data/water_potability_test.csv", index=False)
+
+    
+
+
         
 def read_csv(filename, switch_points = None):
     
@@ -80,7 +124,7 @@ def read_csv(filename, switch_points = None):
             if feature not in switch_points :
                 switch_points[feature] = mapping(feature, examples, F_disc)
                 
-            appply_mapping(feature, examples, F_disc, switch_points[feature])
+            apply_mapping(feature, examples, F_disc, switch_points[feature])
                 
 
         # if not continuous, just copy over
@@ -128,7 +172,7 @@ def mapping(feature, data, F_disc):
     return switch_points
 
 
-def appply_mapping(feature, data, F_disc, switch_points) :
+def apply_mapping(feature, data, F_disc, switch_points) :
 
     # add a feature for each switch point (keep feature vals as strings)
     for s in switch_points:

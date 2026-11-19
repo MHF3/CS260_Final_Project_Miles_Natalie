@@ -1,21 +1,13 @@
 import kagglehub
 from kagglehub import KaggleDatasetAdapter
+from collections import OrderedDict
+
+import file_setup
 
 def main():
-    # Set the path to the file you'd like to load
-    file_path = "water_potability.csv"
 
-    # Load the latest version
-    df = kagglehub.load_dataset(
-    KaggleDatasetAdapter.PANDAS,
-    "devanshibavaria/water-potability-dataset-with-10-parameteres",
-    file_path,
-    # Provide any additional arguments like
-    # sql_query or pandas_kwargs. See the
-    # documenation for more information:
-    # https://github.com/Kaggle/kagglehub/blob/main/README.md#kaggledatasetadapterpandas
-    )
-
-    print("First 5 records:", df.head())
+    file_setup.load_kaggle_data()
+    train_partition, switch_points = file_setup.read_csv("data/water_potability_train.csv")
+    test_partition, _ = file_setup.read_csv("data/water_potability_test.csv", switch_points) # ignoring switch points return
 
 if __name__ == '__main__': main()

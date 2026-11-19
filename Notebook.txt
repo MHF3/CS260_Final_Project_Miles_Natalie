@@ -1,3 +1,7 @@
-1 hr:
-read in dataset (kaggle)
-started converting cont to discrete
+Natalie + Miles - 11/18 - 1 hr :
+- read in dataset (kaggle)
+- started converting features from cont to discrete
+
+Natalie - 11/19 - 20 mins :
+- convert df to csv
+- split into train and test partition
