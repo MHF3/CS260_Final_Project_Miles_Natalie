@@ -18,26 +18,26 @@ from sklearn.model_selection import train_test_split
 
 class Example:
 
-    def __init__(self, features, label):
+    def __init__(self, features : dict[str, str], label : str):
         """Helper class (like a struct) that stores info about each example."""
         # dictionary. key=feature name: value=feature value for this example
-        self.features = features
-        self.label = label # in {0, 1, 2, ..., K-1}
+        self.features : dict[str, str] = features
+        self.label : str = label # in {0, 1, 2, ..., K-1}
 
 
 class Partition:
 
-    def __init__(self, data, F, K):
+    def __init__(self, data : list[Example], F : dict[str, list[str]], K : int):
         """Store information about a dataset"""
         # list of Examples
-        self.data = data
-        self.n = len(self.data)
+        self.data : list[Example] = data
+        self.n : int = len(self.data)
 
         # dictionary. key=feature name: value=list of possible values
-        self.F = F
+        self.F : dict[str, list[str]] = F
 
         # number of classes
-        self.K = K
+        self.K : int = K
    
    
 ###########################################################################################################
@@ -53,7 +53,7 @@ def load_kaggle_data() :
     """
     
     # Set the path to the file you'd like to load
-    file_path = "water_potability.csv"
+    file_path : str = "water_potability.csv"
 
     # Load the latest version
     df = kagglehub.load_dataset(
@@ -76,7 +76,7 @@ def load_kaggle_data() :
     test_df.to_csv("data/water_potability_test.csv", index=False)
 
         
-def read_csv(filename, switch_points = None):
+def read_csv(filename : str , switch_points : list[float] = None):
     """
     Read the CSV file (from the str filename) into the Partition format.
     Uses mapping() and apply_mapping() to convert continuous features into discrete features
@@ -85,7 +85,7 @@ def read_csv(filename, switch_points = None):
     return : partition of data
     """
     
-    data = []
+    data  = []
     F = OrderedDict()
      
     csv_file = csv.reader(open(filename, 'r'), delimiter = ',')
