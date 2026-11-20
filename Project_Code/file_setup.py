@@ -1,14 +1,20 @@
+"""
+Contains helper functions ran in main that read data, create train and test partitions, then convert continuous features into discrete
+Author : Natalie Queenan
+Date : 
+"""
+
 import csv
-from collections import OrderedDict
-
 import kagglehub
-from kagglehub import KaggleDatasetAdapter
 
+from collections import OrderedDict
+from kagglehub import KaggleDatasetAdapter
 from sklearn.model_selection import train_test_split
 
 ###########################################################################################################
 # CLASSES
 ###########################################################################################################
+
 
 class Example:
 
@@ -17,6 +23,7 @@ class Example:
         # dictionary. key=feature name: value=feature value for this example
         self.features = features
         self.label = label # in {0, 1, 2, ..., K-1}
+
 
 class Partition:
 
@@ -32,14 +39,17 @@ class Partition:
         # number of classes
         self.K = K
    
+   
 ###########################################################################################################
-# DATA LOADING / READING
+# DATA LOADING / PUTTING INTO FORMAT WE NEED FOR REST OF PROJECT
 ###########################################################################################################
+        
         
 def load_kaggle_data() :
     """
-    got this code from kaggle on the dataset we choose
-    reads it in and uses sklearn to split it into train (.8) and test (.2)
+    Got code in beginning of this method from kaggle on the dataset we choose
+    Loads kaggle dataset, drops rows that have null values, and uses sklearn to split it into train (.8) and test (.2). 
+        Converts from df to csv to use read_csv() method and puts them in data folder
     """
     
     # Set the path to the file you'd like to load
@@ -55,22 +65,22 @@ def load_kaggle_data() :
     # documenation for more information:
     # https://github.com/Kaggle/kagglehub/blob/main/README.md#kaggledatasetadapterpandas
     )
+    
+    df = df.dropna() # removing rows with null values (can change later if that's not how we want to deal with it)
 
     train_df, test_df = train_test_split(df, test_size=0.2, random_state=42) # random_state = 42 makes it the same split every time
     
-    # save as csv so we can partition etc.
+    # save as csv so we can use read_csv() method
     df.to_csv("data/water_potability.csv", index=False)
     train_df.to_csv("data/water_potability_train.csv", index=False)
     test_df.to_csv("data/water_potability_test.csv", index=False)
 
-    
-
-
         
 def read_csv(filename, switch_points = None):
-    
     """
-    read the CSV file (from the str filename) into the Partition format.
+    Read the CSV file (from the str filename) into the Partition format.
+    Uses mapping() and apply_mapping() to convert continuous features into discrete features
+    Most of this code is recycled from earlier labs
     filename : name of CSV file to be read into partition format
     return : partition of data
     """
@@ -84,7 +94,6 @@ def read_csv(filename, switch_points = None):
          data.append(row)
     # so now we have a list (data) of rows
     
-    # CHANGED
     # feature_names are from the headers
     feature_names = data[0][:-1] 
      
@@ -110,10 +119,11 @@ def read_csv(filename, switch_points = None):
         label = row[-1]
         examples.append(Example(X_dict, label))
 
-
     # convert continuous features to discrete
     F_disc = {}
     
+    # should create dict for train data but then pass that dict in when used on test data so 
+    # both partitions have the same discrete features
     if switch_points is None :
         switch_points = {}
         
@@ -122,10 +132,9 @@ def read_csv(filename, switch_points = None):
         # if continuous, convert feature (NOTE: modifies data and F_disc)
         if F[feature] == "cont":
             if feature not in switch_points :
-                switch_points[feature] = mapping(feature, examples, F_disc)
+                switch_points[feature] = mapping(feature, examples)
                 
             apply_mapping(feature, examples, F_disc, switch_points[feature])
-                
 
         # if not continuous, just copy over
         else:
@@ -136,13 +145,13 @@ def read_csv(filename, switch_points = None):
     return partition, switch_points
 
 
-def mapping(feature, data, F_disc):
+def mapping(feature, data):
     """
-    Convert one feature (name f) from continuous to discrete.
+    Creates the label changes to convert one feature from continuous to discrete
     Credit: based on original code from Ameet Soni.
-    Split convert one in half into where it makes the mapping and where
-        it actually applies it because need to use same mapping for train
-        and test
+    feature : cont feature to convert to discrete
+    data : data where feature came from
+    return : switch_points -- discrete label changes for the continuous feature 
     """
 
     # first combine the feature values (for f) and the labels
@@ -173,7 +182,16 @@ def mapping(feature, data, F_disc):
 
 
 def apply_mapping(feature, data, F_disc, switch_points) :
-
+    """
+    For each new discrete label created for the continuous feature, creates a new binary feature that says if the original 
+        feature value is less than or equal to that point, then removes the original feature
+    Credit: based on original code from Ameet Soni.
+    feature : cont feature to convert to discrete
+    data : data where feature came from
+    F_disc : possible values for feature
+    switch_points : discrete label changes for the continuous feature 
+    """
+    
     # add a feature for each switch point (keep feature vals as strings)
     for s in switch_points:
         key = feature+"<="+str(s)

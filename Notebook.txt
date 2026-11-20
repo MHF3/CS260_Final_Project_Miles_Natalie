@@ -2,6 +2,9 @@ Natalie + Miles - 11/18 - 1 hr :
 - read in dataset (kaggle)
 - started converting features from cont to discrete
 
-Natalie - 11/19 - 20 mins :
+Natalie - 11/19 - 1 hr :
 - convert df to csv
 - split into train and test partition
+- finish functions that convert features from cont to discrete
+    (most of that code was taken from when I accidentally did it for lab 7 so it didn't take long to finalize)
+
